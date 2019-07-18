@@ -5,6 +5,7 @@ import { getMovies } from "../services/fakeMovieService";
 import { getGenres } from "../services/fakeGenreService";
 import { paginate } from "../utils/paginate";
 import MoviesTable from "./moviesTable";
+import _ from "lodash";
 
 class Movies extends Component {
   state = {
@@ -13,12 +14,13 @@ class Movies extends Component {
     movies: [],
     genres: [],
     currentPage: 1,
-    pageSize: 4
+    pageSize: 4,
+    sortColumn: { path: "title", order: "asc" }
     // selectedGenre: null
   };
 
   componentDidMount() {
-    const genres = [{ name: "All Genres" }, ...getGenres()];
+    const genres = [{ _id: "", name: "All Genres" }, ...getGenres()];
     this.setState({ movies: getMovies(), genres: genres });
   }
 
@@ -48,14 +50,38 @@ class Movies extends Component {
     // console.log("this.state.selectedGenre", this.state.selectedGenre);
   };
 
+  handleSort = sortColumn => {
+    this.setState({ sortColumn });
+    // console.log(path);
+  };
+
+  getPageData = () => {
+    const {
+      pageSize,
+      currentPage,
+      selectedGenre,
+      movies: allMovies,
+      sortColumn
+    } = this.state;
+    // take the correct movies
+    const filtered =
+      selectedGenre && selectedGenre._id
+        ? allMovies.filter(m => m.genre._id === selectedGenre._id)
+        : allMovies;
+
+    const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
+
+    const movies = paginate(sorted, currentPage, pageSize);
+
+    return { totalCount: filtered.length, data: movies };
+  };
+
   render() {
     const { length: count } = this.state.movies;
-    const { pageSize, currentPage, selectedGenre, movies: allMovies } = this.state;
+    const { pageSize, currentPage, sortColumn } = this.state;
     if (count === 0) return <p>There are no movies in the database.</p>;
 
-    // take the correct movies
-    const filtered = selectedGenre && selectedGenre._id ? allMovies.filter(m => m.genre._id === selectedGenre._id) : allMovies;
-    const movies = paginate(filtered, currentPage, pageSize);
+    const { totalCount, data: movies } = this.getPageData();
 
     // console.log(movies);
     // in jsx, render only return a single element
@@ -64,7 +90,6 @@ class Movies extends Component {
       <div className="row">
         {/* <div className="col-3"> */}
         <div className="col-3">
-
           <ListGroup
             items={this.state.genres}
             selectedItem={this.state.selectedGenre}
@@ -75,10 +100,16 @@ class Movies extends Component {
         </div>
 
         <div className="col">
-          <p>Showing {filtered.length} movies in the database.</p>
-          <MoviesTable movies={movies} onLike={this.handleLike} onDelete={this.handleDelete} />
+          <p>Showing {totalCount} movies in the database.</p>
+          <MoviesTable
+            movies={movies}
+            sortColumn={sortColumn}
+            onLike={this.handleLike}
+            onDelete={this.handleDelete}
+            onSort={this.handleSort}
+          />
           <Pagination
-            itemsCount={filtered.length}
+            itemsCount={totalCount}
             pageSize={pageSize}
             currentPage={currentPage}
             onPageChange={this.handlePageChange}
