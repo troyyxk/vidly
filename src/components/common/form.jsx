@@ -58,7 +58,7 @@ class Form extends Component {
     );
   };
 
-  renderInput90 = (name, label, type = "text") => {
+  renderInput = (name, label, type = "text") => {
     const { data, errors } = this.state;
 
     return (

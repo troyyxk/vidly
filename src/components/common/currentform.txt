@@ -58,7 +58,7 @@ class Form extends Component {
     );
   };
 
-  renderInput90 = (name, label) => {
+  renderInput = (name, label) => {
     const { data, errors } = this.state;
 
     return (
