@@ -32,9 +32,9 @@ class RegisterForm extends Form {
       <div>
         <h1>Register Form</h1>
         <form onSubmit={this.handleSubmit}>
-          {this.renderInput90("username", "Username")}
-          {this.renderInput90("password", "Password", "password")}
-          {this.renderInput90("name", "Name")}
+          {this.renderInput("username", "Username")}
+          {this.renderInput("password", "Password", "password")}
+          {this.renderInput("name", "Name")}
 
           <button disabled={this.validate()} className="btn btn-primary">
             Register
